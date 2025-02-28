@@ -62,7 +62,7 @@
    - Save `basilisk_setup.el` to `~/.emacs.d/lisp/`:
      ```sh
      mkdir -p ~/.emacs.d/lisp/
-     wget -O ~/.emacs.d/lisp/basilisk_setup.el <URL-to-file>
+     Download link: https://github.com/AdityasOcean/basilisk_setup.el/tree/main
      ```
 
 2. **Configure Emacs**:
