@@ -1,6 +1,6 @@
 ;;; basilisk_setup.el --- Comprehensive Basilisk enhancements for C mode
 ;; Author: Arun K Eswara, eswara.arun@gmail.com
-;; Version: 1.1
+;; Version: 1.12
 ;; Date: 28th February 2025
 ;;; Commentary:
 ;; This package provides extensive syntax highlighting, editing features,
@@ -12,6 +12,7 @@
 
 (require 'cc-mode)
 (require 'compile)  ; Ensure compilation-mode is available
+(require 'easymenu)  ; Required for menu definition
 
 ;;; =========================================================
 ;;; Comprehensive Basilisk keywords, organized by category
@@ -107,6 +108,28 @@
      (1 font-lock-preprocessor-face)
      (2 font-lock-variable-name-face)))
   "Multiline patterns for Basilisk code constructs.")
+
+;; Define the keymap for basilisk-mode
+(defvar basilisk-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "C-c e") 'basilisk-insert-event)
+    (define-key map (kbd "C-c f") 'basilisk-insert-foreach)
+    (define-key map (kbd "C-c a") 'basilisk-insert-foreach-face)
+    (define-key map (kbd "C-c r") 'basilisk-insert-foreach-reduction)
+    (define-key map (kbd "C-c m") 'basilisk-insert-mpi-function)
+    (define-key map (kbd "C-c i") 'basilisk-insert-main)
+    (define-key map (kbd "C-c o") 'basilisk-insert-main-mpi)
+    (define-key map (kbd "C-c s") 'basilisk-insert-struct)
+    (define-key map (kbd "C-c v") 'basilisk-insert-solver)
+    (define-key map (kbd "C-c c") 'basilisk-compile-command-generator)
+    (define-key map (kbd "C-c x") 'basilisk-run)
+    (define-key map (kbd "C-c z") 'basilisk-compile-and-run)
+    (define-key map (kbd "C-c d") 'basilisk-browse-documentation)
+    (define-key map (kbd "C-c h") 'basilisk-show-compilation-help)
+    (define-key map (kbd "C-c C-f") 'basilisk-find-event-definition)
+    (define-key map (kbd "C-c C-t") 'basilisk-toggle-mpi)
+    map)
+  "Keymap for basilisk-mode.")
 
 ;;; =========================================================
 ;;; Enhanced font-lock and syntax highlighting
@@ -518,29 +541,14 @@
           (message "MPI support added"))))))
 
 ;;; =========================================================
-;;; Setup and integration
+;;; Setup and integration - TRADITIONAL APPROACH 
 ;;; =========================================================
 
-(defun basilisk-setup-keymap ()
-  "Set up key bindings for Basilisk code editing."
-  (when (boundp 'c-mode-map)
-    (define-key c-mode-map "\C-ce" 'basilisk-insert-event)
-    (define-key c-mode-map "\C-cf" 'basilisk-insert-foreach)
-    (define-key c-mode-map "\C-ca" 'basilisk-insert-foreach-face)
-    (define-key c-mode-map "\C-cr" 'basilisk-insert-foreach-reduction)
-    (define-key c-mode-map "\C-cm" 'basilisk-insert-mpi-function)
-    (define-key c-mode-map "\C-ci" 'basilisk-insert-main)
-    (define-key c-mode-map "\C-co" 'basilisk-insert-main-mpi)
-    (define-key c-mode-map "\C-cs" 'basilisk-insert-struct)
-    (define-key c-mode-map "\C-cv" 'basilisk-insert-solver)
-    (define-key c-mode-map "\C-cc" 'basilisk-compile-command-generator)
-    (define-key c-mode-map "\C-cx" 'basilisk-run)
-    (define-key c-mode-map "\C-cz" 'basilisk-compile-and-run)
-    (define-key c-mode-map "\C-cd" 'basilisk-browse-documentation)
-    (define-key c-mode-map "\C-ch" 'basilisk-show-compilation-help)
-    (define-key c-mode-map "\C-c\C-f" 'basilisk-find-event-definition)
-    (define-key c-mode-map "\C-c\C-t" 'basilisk-toggle-mpi)))
+;; Define basilisk-menu only once
+(defvar basilisk-menu nil
+  "Menu for Basilisk mode commands.")
 
+;; Set up indentation
 (defun basilisk-setup-indentation ()
   "Set up indentation for Basilisk code."
   (setq c-basic-offset 2)
@@ -550,9 +558,74 @@
   (c-set-offset 'case-label '+)
   (c-set-offset 'access-label '-))
 
-(defun basilisk-setup-menu ()
-  "Set up a comprehensive Basilisk menu in C mode."
-  (easy-menu-define basilisk-menu c-mode-map "Basilisk Commands"
+;; Set up keybindings
+(defun basilisk-setup-keybindings ()
+  "Apply keybindings from basilisk-mode-map to the current buffer."
+  (let ((map (current-local-map)))
+    (define-key map (kbd "C-c e") 'basilisk-insert-event)
+    (define-key map (kbd "C-c f") 'basilisk-insert-foreach)
+    (define-key map (kbd "C-c a") 'basilisk-insert-foreach-face)
+    (define-key map (kbd "C-c r") 'basilisk-insert-foreach-reduction)
+    (define-key map (kbd "C-c m") 'basilisk-insert-mpi-function)
+    (define-key map (kbd "C-c i") 'basilisk-insert-main)
+    (define-key map (kbd "C-c o") 'basilisk-insert-main-mpi)
+    (define-key map (kbd "C-c s") 'basilisk-insert-struct)
+    (define-key map (kbd "C-c v") 'basilisk-insert-solver)
+    (define-key map (kbd "C-c c") 'basilisk-compile-command-generator)
+    (define-key map (kbd "C-c x") 'basilisk-run)
+    (define-key map (kbd "C-c z") 'basilisk-compile-and-run)
+    (define-key map (kbd "C-c d") 'basilisk-browse-documentation)
+    (define-key map (kbd "C-c h") 'basilisk-show-compilation-help)
+    (define-key map (kbd "C-c C-f") 'basilisk-find-event-definition)
+    (define-key map (kbd "C-c C-t") 'basilisk-toggle-mpi)))
+
+;;;###autoload
+(defun basilisk-setup ()
+  "Set up C mode for editing Basilisk files."
+  (interactive)
+  (when (derived-mode-p 'c-mode)
+    ;; Setup features
+    (basilisk-setup-font-lock)
+    (basilisk-setup-indentation)
+    (basilisk-setup-keybindings)
+    
+    ;; Define the menu - must be INSIDE this function to work properly
+    (easy-menu-define basilisk-menu (current-local-map) "Basilisk Commands"
+      '("Basilisk"
+        ["Insert Event Block" basilisk-insert-event t]
+        ["Insert Foreach Loop" basilisk-insert-foreach t]
+        ["Insert Foreach_face Loop" basilisk-insert-foreach-face t]
+        ["Insert Foreach Reduction" basilisk-insert-foreach-reduction t]
+        ["Insert MPI Function" basilisk-insert-mpi-function t]
+        ["Insert Main Function" basilisk-insert-main t]
+        ["Insert MPI Main Function" basilisk-insert-main-mpi t]
+        ["Insert Struct" basilisk-insert-struct t]
+        ["Insert Solver Template" basilisk-insert-solver t]
+        "---"
+        ["Compile with Options" basilisk-compile-command-generator t]
+        ["Run Compiled Program" basilisk-run t]
+        ["Compile and Run" basilisk-compile-and-run t]
+        ["Toggle MPI Support" basilisk-toggle-mpi t]
+        "---"
+        ["Find Event Definition" basilisk-find-event-definition t]
+        "---"
+        ["Compilation Help" basilisk-show-compilation-help t]
+        ["Browse Documentation" basilisk-browse-documentation t]))
+    
+    (message "Basilisk features enabled in C mode")))
+
+;; Hook into C-mode
+(add-hook 'c-mode-hook 'basilisk-setup)
+
+;; Define a derived mode for standalone use
+(define-derived-mode basilisk-mode c-mode "Basilisk"
+  "Major mode for editing Basilisk CFD code files."
+  (basilisk-setup-font-lock)
+  (basilisk-setup-indentation)
+  (basilisk-setup-keybindings)
+  
+  ;; Define menu for standalone mode
+  (easy-menu-define basilisk-menu basilisk-mode-map "Basilisk Commands"
     '("Basilisk"
       ["Insert Event Block" basilisk-insert-event t]
       ["Insert Foreach Loop" basilisk-insert-foreach t]
@@ -572,29 +645,15 @@
       ["Find Event Definition" basilisk-find-event-definition t]
       "---"
       ["Compilation Help" basilisk-show-compilation-help t]
-      ["Browse Documentation" basilisk-browse-documentation t])))
+      ["Browse Documentation" basilisk-browse-documentation t]))
+  
+  (setq comment-start "// "
+        comment-end "")
+  (message "Basilisk mode enabled"))
 
-;;;###autoload
-(defun basilisk-setup ()
-  "Set up C mode for editing Basilisk files."
-  (interactive)
-  (when (derived-mode-p 'c-mode)
-    (basilisk-setup-font-lock)
-    (basilisk-setup-keymap)
-    (basilisk-setup-indentation)
-    (basilisk-setup-menu)
-    (message "Basilisk features enabled in C mode")))
-
-;;;###autoload
-(defun basilisk-mode ()
-  "Enable C mode with Basilisk enhancements."
-  (interactive)
-  (c-mode)
-  (basilisk-setup))
-
-(add-hook 'c-mode-hook 'basilisk-setup)
-(add-to-list 'auto-mode-alist '("\\.c\\'" . basilisk-mode))
-(add-to-list 'auto-mode-alist '("\\.h\\'" . basilisk-mode))
+;; Associate with file extensions
+(add-to-list 'auto-mode-alist '("\\.c\\'" . c-mode))
+(add-to-list 'auto-mode-alist '("\\.h\\'" . c-mode))
 
 (provide 'basilisk_setup)
 
