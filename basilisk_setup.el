@@ -473,7 +473,7 @@
      ((string= doc-type "Main")
       (browse-url "http://basilisk.fr/src/README"))
      ((string= doc-type "Functions")
-      (browse-url "http://basilisk.fr/src/FUNCTIONS"))
+      (browse-url "http://basilisk.fr/src/README"))
      ((string= doc-type "Examples")
       (browse-url "http://basilisk.fr/src/examples/"))
      ((string= doc-type "Tutorial")
